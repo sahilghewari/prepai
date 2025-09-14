@@ -66,7 +66,7 @@ async function Home() {
                     </p>
 
                     <Button asChild className="btn-primary max-sm:w-full">
-                        <Link href="/interview">Start an Interview</Link>
+                        <Link href="#take-interviews">Start an Interview</Link>
                     </Button>
                 </div>
 
@@ -105,7 +105,7 @@ async function Home() {
                 </div>
             </section>
 
-            <section className="flex flex-col gap-6 mt-8">
+            <section className="flex flex-col gap-6 mt-8" id="take-interviews">
                 <h2>Take Interviews</h2>
 
                 <div className="interviews-section">
