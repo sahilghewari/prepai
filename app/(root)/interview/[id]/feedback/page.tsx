@@ -9,6 +9,8 @@ import {
 } from "@/lib/actions/general.action";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
+import { getInterviewTitle } from "@/lib/utils";
+import type { RouteParams } from "@/types";
 
 const Feedback = async ({ params }: RouteParams) => {
     const { id } = await params;
@@ -26,8 +28,14 @@ const Feedback = async ({ params }: RouteParams) => {
         <section className="section-feedback">
             <div className="flex flex-row justify-center">
                 <h1 className="text-4xl font-semibold">
-                    Feedback on the Interview -{" "}
-                    <span className="capitalize">{interview.role}</span> Interview
+                    Feedback on the{" "}
+                    <span className="capitalize">{getInterviewTitle({
+                        id: interview.id,
+                        jobRole: interview.jobRole,
+                        role: interview.role,
+                        category: interview.category,
+                        type: interview.type
+                    })}</span>
                 </h1>
             </div>
 

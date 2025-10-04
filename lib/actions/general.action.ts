@@ -223,14 +223,46 @@ export async function getLatestInterviews(
         if (interviewData.length > 0) {
             const { dummyInterviews } = await import("@/constants");
             interviewData = interviewData.map((interview, index) => {
-                const dummy = dummyInterviews[index % dummyInterviews.length];
+                // Use interview ID to consistently map to same dummy data, not just index
+                let dummyIndex = index % dummyInterviews.length;
+                if (interview.id) {
+                    let hash = 0;
+                    for (let i = 0; i < interview.id.length; i++) {
+                        hash = ((hash << 5) - hash + interview.id.charCodeAt(i)) & 0xffffffff;
+                    }
+                    dummyIndex = Math.abs(hash) % dummyInterviews.length;
+                }
+                
+                const dummy = dummyInterviews[dummyIndex];
+                
+                // Better role mapping logic - only enhance if missing or generic
+                const hasSpecificJobRole = interview.jobRole && 
+                    !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.jobRole.toLowerCase());
+                const hasSpecificRole = interview.role && 
+                    !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.role.toLowerCase());
+                
+                const enhancedJobRole = hasSpecificJobRole ? interview.jobRole : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+                const enhancedRole = hasSpecificRole ? interview.role : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+                const enhancedCategory = interview.category || dummy.category || interview.type;
+                
+                // Handle techstack conversion to tags array
+                let enhancedTags = dummy.tags || interview.tags;
+                if (!enhancedTags && interview.techstack) {
+                    const techstack = interview.techstack as any;
+                    if (typeof techstack === 'string') {
+                        enhancedTags = techstack.split(',').map((t: string) => t.trim());
+                    } else if (Array.isArray(techstack)) {
+                        enhancedTags = techstack;
+                    }
+                }
+                
                 return {
                     ...interview,
-                    jobRole: dummy.jobRole || dummy.title || interview.jobRole || interview.role,
-                    role: dummy.jobRole || dummy.title || interview.jobRole || interview.role,
-                    category: dummy.category || interview.category || interview.type,
+                    jobRole: enhancedJobRole,
+                    role: enhancedRole,
+                    category: enhancedCategory,
                     difficulty: dummy.difficulty || interview.difficulty,
-                    tags: dummy.tags || interview.tags || interview.techstack,
+                    tags: enhancedTags,
                     techstack: dummy.tags || interview.tags || interview.techstack,
                 };
             });
@@ -274,14 +306,46 @@ export async function getLatestInterviews(
             if (interviewData.length > 0) {
                 const { dummyInterviews } = await import("@/constants");
                 interviewData = interviewData.map((interview, index) => {
-                    const dummy = dummyInterviews[index % dummyInterviews.length];
+                    // Use interview ID to consistently map to same dummy data, not just index
+                    let dummyIndex = index % dummyInterviews.length;
+                    if (interview.id) {
+                        let hash = 0;
+                        for (let i = 0; i < interview.id.length; i++) {
+                            hash = ((hash << 5) - hash + interview.id.charCodeAt(i)) & 0xffffffff;
+                        }
+                        dummyIndex = Math.abs(hash) % dummyInterviews.length;
+                    }
+                    
+                    const dummy = dummyInterviews[dummyIndex];
+                    
+                    // Better role mapping logic - only enhance if missing or generic
+                    const hasSpecificJobRole = interview.jobRole && 
+                        !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.jobRole.toLowerCase());
+                    const hasSpecificRole = interview.role && 
+                        !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.role.toLowerCase());
+                    
+                    const enhancedJobRole = hasSpecificJobRole ? interview.jobRole : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+                    const enhancedRole = hasSpecificRole ? interview.role : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+                    const enhancedCategory = interview.category || dummy.category || interview.type;
+                    
+                    // Handle techstack conversion to tags array
+                    let enhancedTags = dummy.tags || interview.tags;
+                    if (!enhancedTags && interview.techstack) {
+                        const techstack = interview.techstack as any;
+                        if (typeof techstack === 'string') {
+                            enhancedTags = techstack.split(',').map((t: string) => t.trim());
+                        } else if (Array.isArray(techstack)) {
+                            enhancedTags = techstack;
+                        }
+                    }
+                    
                     return {
                         ...interview,
-                        jobRole: dummy.jobRole || dummy.title || interview.jobRole || interview.role,
-                        role: dummy.jobRole || dummy.title || interview.jobRole || interview.role,
-                        category: dummy.category || interview.category || interview.type,
+                        jobRole: enhancedJobRole,
+                        role: enhancedRole,
+                        category: enhancedCategory,
                         difficulty: dummy.difficulty || interview.difficulty,
-                        tags: dummy.tags || interview.tags || interview.techstack,
+                        tags: enhancedTags,
                         techstack: dummy.tags || interview.tags || interview.techstack,
                     };
                 });

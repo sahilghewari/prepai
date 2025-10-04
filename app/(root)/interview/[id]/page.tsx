@@ -2,7 +2,8 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import Agent from "@/components/Agent";
-import { getRandomInterviewCover } from "@/lib/utils";
+import { getRandomInterviewCover, getInterviewTitle } from "@/lib/utils";
+import type { RouteParams } from "@/types";
 
 import {
     getFeedbackByInterviewId,
@@ -28,7 +29,13 @@ const InterviewDetails = async ({ params }: RouteParams) => {
         console.log("Original interview userId:", interview.userId, "Current userId:", user?.id);
 
         const { success, interviewId: newInterviewId } = await createEnhancedInterview(user?.id!, {
-            title: interview.title || `${interview.jobRole || interview.role} Interview`,
+            title: interview.title || getInterviewTitle({
+                id: interview.id,
+                jobRole: interview.jobRole,
+                role: interview.role,
+                category: interview.category,
+                type: interview.type
+            }),
             jobRole: interview.jobRole || interview.role,
             category: interview.category || interview.type,
             difficulty: interview.difficulty,
@@ -68,7 +75,13 @@ const InterviewDetails = async ({ params }: RouteParams) => {
                             height={40}
                             className="rounded-full object-cover size-[40px]"
                         />
-                        <h3 className="capitalize">{interview.role} Interview</h3>
+                        <h3 className="capitalize">{getInterviewTitle({
+                            id: interview.id,
+                            jobRole: interview.jobRole,
+                            role: interview.role,
+                            category: interview.category,
+                            type: interview.type
+                        })}</h3>
                     </div>
 
                     <DisplayTechIcons techStack={interview.techstack} />

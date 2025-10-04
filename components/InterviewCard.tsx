@@ -5,8 +5,9 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import DisplayTechIcons from "./DisplayTechIcons";
 
-import { cn, getRandomInterviewCover } from "@/lib/utils";
+import { cn, getRandomInterviewCover, getInterviewTitle } from "@/lib/utils";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
+import type { InterviewCardProps } from "@/types";
 
 const InterviewCard = async ({
                                  interviewId,
@@ -28,22 +29,16 @@ const InterviewCard = async ({
             })
             : null;
 
-    const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
+    const normalizedType = type && /mix/gi.test(type) ? "Mixed" : (type || "Technical");
 
-    // Get the best available title
-    const getInterviewTitle = () => {
-        // Priority: jobRole > role > "Interview"
-        const titleRole = jobRole || role;
-        if (titleRole) {
-            return `${titleRole} Interview`;
-        }
-        // Fallback: use category/type if available
-        const interviewType = category || type;
-        if (interviewType) {
-            return `${interviewType} Interview`;
-        }
-        return "Interview";
-    };
+    // Use the utility function for consistent title generation
+    const interviewTitle = getInterviewTitle({
+        interviewId,
+        jobRole,
+        role,
+        category,
+        type
+    });
 
     const badgeColor =
         ({
@@ -80,7 +75,7 @@ const InterviewCard = async ({
                     />
 
                     {/* Interview Role */}
-                    <h3 className="mt-5 capitalize">{getInterviewTitle()}</h3>
+                    <h3 className="mt-5 capitalize">{interviewTitle}</h3>
 
                     {/* Date & Score */}
                     <div className="flex flex-row gap-5 mt-3">
