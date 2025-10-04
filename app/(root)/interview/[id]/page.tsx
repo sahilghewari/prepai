@@ -2,13 +2,14 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import Agent from "@/components/Agent";
-import { getRandomInterviewCover, getInterviewTitle } from "@/lib/utils";
+import { getInterviewTitle, getInterviewCover } from "@/lib/utils";
 import type { RouteParams } from "@/types";
 
 import {
     getFeedbackByInterviewId,
     getInterviewById,
     createEnhancedInterview,
+    enhanceInterviewData,
 } from "@/lib/actions/general.action";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
@@ -20,6 +21,9 @@ const InterviewDetails = async ({ params }: RouteParams) => {
 
     let interview = await getInterviewById(id);
     if (!interview) redirect("/");
+
+    // Enhance the interview data with the same logic used in the main page
+    interview = await enhanceInterviewData(interview);
 
     console.log("Interview page - Interview userId:", interview.userId, "Current userId:", user?.id);
 
@@ -69,7 +73,7 @@ const InterviewDetails = async ({ params }: RouteParams) => {
                 <div className="flex flex-row gap-4 items-center max-sm:flex-col">
                     <div className="flex flex-row gap-4 items-center">
                         <Image
-                            src={getRandomInterviewCover()}
+                            src={getInterviewCover(interview.id)}
                             alt="cover-image"
                             width={40}
                             height={40}

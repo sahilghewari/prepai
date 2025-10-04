@@ -68,6 +68,23 @@ export const getRandomInterviewCover = () => {
 };
 
 /**
+ * Get a consistent interview cover based on interview ID
+ */
+export const getInterviewCover = (interviewId?: string) => {
+    if (!interviewId) {
+        return getRandomInterviewCover();
+    }
+    
+    // Use the same hash algorithm as the interview title generation
+    let hash = 0;
+    for (let i = 0; i < interviewId.length; i++) {
+        hash = ((hash << 5) - hash + interviewId.charCodeAt(i)) & 0xffffffff;
+    }
+    const index = Math.abs(hash) % interviewCovers.length;
+    return `/covers${interviewCovers[index]}`;
+};
+
+/**
  * Get the appropriate interview title based on interview data
  */
 export const getInterviewTitle = (interview: {

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import {
     getFeedbackByInterviewId,
     getInterviewById,
+    enhanceInterviewData,
 } from "@/lib/actions/general.action";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
@@ -19,6 +20,9 @@ const Feedback = async ({ params }: RouteParams) => {
     const interview = await getInterviewById(id);
     if (!interview) redirect("/");
 
+    // Enhance the interview data with the same logic used in the main page
+    const enhancedInterview = await enhanceInterviewData(interview);
+
     const feedback = await getFeedbackByInterviewId({
         interviewId: id,
         userId: user?.id!,
@@ -30,11 +34,11 @@ const Feedback = async ({ params }: RouteParams) => {
                 <h1 className="text-4xl font-semibold">
                     Feedback on the{" "}
                     <span className="capitalize">{getInterviewTitle({
-                        id: interview.id,
-                        jobRole: interview.jobRole,
-                        role: interview.role,
-                        category: interview.category,
-                        type: interview.type
+                        id: enhancedInterview.id,
+                        jobRole: enhancedInterview.jobRole,
+                        role: enhancedInterview.role,
+                        category: enhancedInterview.category,
+                        type: enhancedInterview.type
                     })}</span>
                 </h1>
             </div>

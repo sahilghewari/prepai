@@ -256,6 +256,17 @@ export async function getLatestInterviews(
                     }
                 }
                 
+                // Ensure techstack is consistently formatted as an array for DisplayTechIcons
+                let enhancedTechStack = enhancedTags || dummy.tags || interview.tags;
+                if (!enhancedTechStack && interview.techstack) {
+                    const techstack = interview.techstack as any;
+                    if (typeof techstack === 'string') {
+                        enhancedTechStack = techstack.split(',').map((t: string) => t.trim());
+                    } else if (Array.isArray(techstack)) {
+                        enhancedTechStack = techstack;
+                    }
+                }
+                
                 return {
                     ...interview,
                     jobRole: enhancedJobRole,
@@ -263,7 +274,7 @@ export async function getLatestInterviews(
                     category: enhancedCategory,
                     difficulty: dummy.difficulty || interview.difficulty,
                     tags: enhancedTags,
-                    techstack: dummy.tags || interview.tags || interview.techstack,
+                    techstack: enhancedTechStack,
                 };
             });
         }
@@ -339,6 +350,17 @@ export async function getLatestInterviews(
                         }
                     }
                     
+                    // Ensure techstack is consistently formatted as an array for DisplayTechIcons
+                    let enhancedTechStack = enhancedTags || dummy.tags || interview.tags;
+                    if (!enhancedTechStack && interview.techstack) {
+                        const techstack = interview.techstack as any;
+                        if (typeof techstack === 'string') {
+                            enhancedTechStack = techstack.split(',').map((t: string) => t.trim());
+                        } else if (Array.isArray(techstack)) {
+                            enhancedTechStack = techstack;
+                        }
+                    }
+                    
                     return {
                         ...interview,
                         jobRole: enhancedJobRole,
@@ -346,7 +368,7 @@ export async function getLatestInterviews(
                         category: enhancedCategory,
                         difficulty: dummy.difficulty || interview.difficulty,
                         tags: enhancedTags,
-                        techstack: dummy.tags || interview.tags || interview.techstack,
+                        techstack: enhancedTechStack,
                     };
                 });
             }
@@ -422,6 +444,72 @@ export async function getInterviewsByUserId(
     } catch (error) {
         console.error("Error fetching user interviews:", error);
         return [];
+    }
+}
+
+// ============================================================================
+// ENHANCE SINGLE INTERVIEW (for individual interview pages)
+// ============================================================================
+export async function enhanceInterviewData(interview: Interview): Promise<Interview> {
+    try {
+        const { dummyInterviews } = await import("@/constants");
+        
+        // Use interview ID to consistently map to same dummy data
+        let dummyIndex = 0;
+        if (interview.id) {
+            let hash = 0;
+            for (let i = 0; i < interview.id.length; i++) {
+                hash = ((hash << 5) - hash + interview.id.charCodeAt(i)) & 0xffffffff;
+            }
+            dummyIndex = Math.abs(hash) % dummyInterviews.length;
+        }
+        
+        const dummy = dummyInterviews[dummyIndex];
+        
+        // Better role mapping logic - only enhance if missing or generic
+        const hasSpecificJobRole = interview.jobRole && 
+            !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.jobRole.toLowerCase());
+        const hasSpecificRole = interview.role && 
+            !['frontend', 'backend', 'technical', 'behavioral', 'mixed'].includes(interview.role.toLowerCase());
+        
+        const enhancedJobRole = hasSpecificJobRole ? interview.jobRole : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+        const enhancedRole = hasSpecificRole ? interview.role : (dummy.jobRole || dummy.title || interview.jobRole || interview.role);
+        const enhancedCategory = interview.category || dummy.category || interview.type;
+        
+        // Handle techstack conversion to tags array
+        let enhancedTags = dummy.tags || interview.tags;
+        if (!enhancedTags && interview.techstack) {
+            const techstack = interview.techstack as any;
+            if (typeof techstack === 'string') {
+                enhancedTags = techstack.split(',').map((t: string) => t.trim());
+            } else if (Array.isArray(techstack)) {
+                enhancedTags = techstack;
+            }
+        }
+        
+        // Ensure techstack is consistently formatted as an array for DisplayTechIcons
+        let enhancedTechStack = enhancedTags || dummy.tags || interview.tags;
+        if (!enhancedTechStack && interview.techstack) {
+            const techstack = interview.techstack as any;
+            if (typeof techstack === 'string') {
+                enhancedTechStack = techstack.split(',').map((t: string) => t.trim());
+            } else if (Array.isArray(techstack)) {
+                enhancedTechStack = techstack;
+            }
+        }
+        
+        return {
+            ...interview,
+            jobRole: enhancedJobRole,
+            role: enhancedRole,
+            category: enhancedCategory,
+            difficulty: dummy.difficulty || interview.difficulty,
+            tags: enhancedTags,
+            techstack: enhancedTechStack,
+        };
+    } catch (error) {
+        console.error("Error enhancing interview data:", error);
+        return interview; // Return original if enhancement fails
     }
 }
 
